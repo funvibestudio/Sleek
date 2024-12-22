@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Vidéo en Plein Écran</title>
+
+
+<!-- NoSleep pour éviter la mise en veille -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
+<script>
+    const noSleep = new NoSleep();
+    document.addEventListener('click', () => {
+        noSleep.enable();
+        console.log("NoSleep activé !");
+    });
+</script>
+    <style>
+      /* Style global pour supprimer les marges et paddings */
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #444; /* Fond noir pour ne pas distraire de la vidéo */
+      }
+
+      /* Style de la vidéo pour qu'elle prenne toute la taille de l'écran */
+      video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* L'image de la vidéo s'ajuste pour couvrir toute la surface */
+      }
+
+      .home-logo {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    background-color: #333;
+    padding: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 9999; /* Assure-toi qu'il est au-dessus des autres éléments */
+}
+
+.home-logo i {
+    color: white !important; /* Forcer la couleur de l'icône à blanc */
+}
+
+.home-logo:hover {
+    background-color: #575757;
+}
+    </style>
+  </head>
+
+  <body>
+    <div class= "home-logo"><a href="index.html"><i class="fa-solid fa-home"></i></a></div>
+    <video autoplay muted loop>
+      <source src="tavideo.mp4" type="video/mp4">
+      Ton navigateur ne supporte pas les vidéos HTML5.
+    </video>
+
+  </body>
+</html>

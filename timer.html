@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>PixyTimer</title>
+
+<link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+
+<!-- NoSleep pour éviter la mise en veille -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
+<script>
+    const noSleep = new NoSleep();
+    document.addEventListener('click', () => {
+        noSleep.enable();
+        console.log("NoSleep activé !");
+    });
+</script>
+    <style>
+      body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #444;
+        font-family: 'Arial', sans-serif;
+        color: white;
+        margin: 0;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 15px;
+      }
+
+      .control-group span {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .button-group button {
+        background-color: #5c6bc0;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin: 3px 0;
+        cursor: pointer;
+      }
+
+      .button-group button:hover {
+        background-color: #3f51b5;
+      }
+
+      #timer {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background-color: #333;
+        padding: 20px 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .buttons button {
+        background-color: #5c6bc0;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 1.2rem;
+        border: none;
+        cursor: pointer;
+      }
+
+      .buttons button:hover {
+        background-color: #3f51b5;
+      }
+
+      audio {
+        display: none;
+      }
+
+      @media (max-width: 600px) {
+        #timer {
+          font-size: 2rem;
+          padding: 10px 20px;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .control-group {
+          margin: 10px 0;
+        }
+
+        .buttons button {
+          font-size: 1rem;
+          padding: 8px 16px;
+        }
+      }
+
+      .home-logo {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    background-color: #333;
+    padding: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 9999; /* Assure-toi qu'il est au-dessus des autres éléments */
+}
+
+.home-logo i {
+    color: white !important; /* Forcer la couleur de l'icône à blanc */
+}
+
+.home-logo:hover {
+    background-color: #575757;
+}
+    </style>
+  </head>
+
+  <body>
+    <div class= "home-logo"><a href="index.html"><i class="fa-solid fa-home"></i></a></div>
+    <div class="controls">
+      <!-- Contrôles pour les heures -->
+      <div class="control-group">
+        <span>Heures</span>
+        <div class="button-group">
+          <button onclick="adjustTime('hours', 1)">+</button>
+          <span id="hours">00</span>
+          <button onclick="adjustTime('hours', -1)">-</button>
+        </div>
+      </div>
+      <!-- Contrôles pour les minutes -->
+      <div class="control-group">
+        <span>Minutes</span>
+        <div class="button-group">
+          <button onclick="adjustTime('minutes', 1)">+</button>
+          <span id="minutes">00</span>
+          <button onclick="adjustTime('minutes', -1)">-</button>
+        </div>
+      </div>
+      <!-- Contrôles pour les secondes -->
+      <div class="control-group">
+        <span>Secondes</span>
+        <div class="button-group">
+          <button onclick="adjustTime('seconds', 1)">+</button>
+          <span id="seconds">00</span>
+          <button onclick="adjustTime('seconds', -1)">-</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="timer">PixyTimer</div>
+    <div class="buttons">
+      <button onclick="startTimer()">Démarrer</button>
+
+      <button onclick="resetTimer()">Réinitialiser</button>
+    </div>
+
+    <audio id="alarm-sound">
+      <source src="sonnerie.wav" type="audio/wav" />
+      Votre navigateur ne prend pas en charge l'élément audio.
+    </audio>
+
+    <script>
+let temps;
+let interval = null;
+let isPaused = false; // Ajout d'une variable pour savoir si le timer est en pause
+const timerElement = document.getElementById("timer");
+const alarmSound = document.getElementById("alarm-sound");
+
+function adjustTime(unit, change) {
+  const element = document.getElementById(unit);
+  let value = parseInt(element.innerText, 10);
+
+  if (unit === 'hours') {
+    value = (value + change + 24) % 24;
+  } else {
+    value = (value + change + 60) % 60;
+  }
+
+  element.innerText = value < 10 ? '0' + value : value;
+}
+
+function startTimer() {
+  if (interval) return; // Empêche de redémarrer un intervalle déjà actif
+
+  const hours = parseInt(document.getElementById("hours").innerText, 10);
+  const minutes = parseInt(document.getElementById("minutes").innerText, 10);
+  const seconds = parseInt(document.getElementById("seconds").innerText, 10);
+
+  temps = hours * 3600 + minutes * 60 + seconds;
+
+  interval = setInterval(() => {
+    if (temps <= 0) {
+      clearInterval(interval);
+      interval = null;
+      alarmSound.play();
+      return;
+    }
+
+    temps--;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+
+
+function resetTimer() {
+  clearInterval(interval);
+  interval = null;
+  temps = 0;
+
+  document.getElementById("hours").innerText = "00";
+  document.getElementById("minutes").innerText = "00";
+  document.getElementById("seconds").innerText = "00";
+
+  timerElement.innerText = "PixyTimer";
+  alarmSound.pause();
+  alarmSound.currentTime = 0;
+
+  isPaused = false; // Réinitialiser l'état de pause
+}
+
+function updateTimerDisplay() {
+  const hours = Math.floor(temps / 3600);
+  const minutes = Math.floor((temps % 3600) / 60);
+  const seconds = temps % 60;
+
+  timerElement.innerText = `${hours.toString().padStart(2, '0')}:${minutes
+    .toString()
+    .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+    </script>
+  </body>
+</html>
