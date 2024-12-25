@@ -216,7 +216,7 @@
                 'Wednesday', 'Thursday', 'Friday', 'Saturday'
             ];
             document.getElementById('txtdty').innerHTML = dt + 'th ' + dToday.getFullYear() + ' ' + weekday[myDay];
-            setTimeout(startTime, 500);
+            setTimeout(startTime, 1000);
         }
 
         var GreetDate = new Date();
@@ -244,11 +244,11 @@
 
             setTimeout(() => {
                 document.getElementById('greetings').style.opacity = '0';
-            }, 2000);
+            }, 500);
 
             setTimeout(() => {
-                window.open("index.html", '_self');
-            }, 3000);
+                window.open("home.html", '_self');
+            }, 500);
         }
     </script>
 
